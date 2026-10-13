@@ -298,7 +298,7 @@ def readout():
         *[block for label, items in STACK for block in pill_rows(label, items)],
         GAP,
         heading("Builds"),
-        row("gtmquant.com", "GTM engine for web3 campaigns"),
+        row("gtmquant.com", "GTM engine for any business"),
         row("usevano.io", "Market intelligence"),
         row("memecoins-trading-agent", "Autonomous trading agent"),
         row("content-creator-skills", "Content engine for LLMs"),
