@@ -3,9 +3,10 @@
 
 Reads the portrait from ascii.txt, pulls live numbers from the GitHub GraphQL
 API, and writes both themes. Needs a token in GH_TOKEN that can see private
-repos, otherwise the stats only count public work.
+repos, otherwise the stats only count public work. update.sh supplies one from
+the local GitHub CLI login, regenerates, commits and pushes:
 
-    GH_TOKEN=$(gh auth token) python3 generate.py
+    ./update.sh
 """
 import datetime
 import json
