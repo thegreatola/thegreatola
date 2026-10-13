@@ -42,7 +42,7 @@ INFO_X = PAD_X + MAP_W + 30
 TILE_H = 62
 DOT_GROUPS = 36
 
-TOOLS = ["Claude", "OpenAI", "Grok", "Higgsfield", "Notion AI", "Cursor"]
+TOOLS = ["Claude", "OpenAI", "Grok", "Hermes", "Higgsfield", "Notion AI", "Cursor", "Bots"]
 STACK = [
     ("Frontend", ["Next.js", "React", "TypeScript"]),
     ("Backend", ["Python", "Node.js", "Telegram Bot API"]),
@@ -265,6 +265,19 @@ def heading(title):
 GAP = ("gap",)
 
 
+def pill_rows(items):
+    """Splits unlabelled pills into as many rows as the readout width needs."""
+    rows, used = [[]], 0
+    for item in items:
+        width = len(item) * PILL_CHAR_W + 18 + 7
+        if rows[-1] and used + width - 7 > INFO_COLS * CHAR_W:
+            rows.append([])
+            used = 0
+        rows[-1].append(item)
+        used += width
+    return [("pills", None, row) for row in rows]
+
+
 def readout():
     return [
         [(f"{LOGIN}@github", "text"), (" " + "-" * (INFO_COLS - len(LOGIN) - 8), "dim")],
@@ -274,7 +287,7 @@ def readout():
         row("Host", "Working globally"),
         GAP,
         heading("Tools"),
-        ("pills", None, TOOLS),
+        *pill_rows(TOOLS),
         GAP,
         heading("Stack"),
         *[("pills", label, items) for label, items in STACK],
