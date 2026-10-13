@@ -1,8 +1,5 @@
 <a href="https://www.thegreatola.com">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="dark.svg">
-    <img alt="thegreatola: web3 growth operator and AI builder. Builds: gtmquant.com, usevano.io, memecoins-trading-agent, content-creator-skills." src="light.svg" width="100%">
-  </picture>
+  <img alt="thegreatola: web3 growth operator and AI builder. Builds: gtmquant.com, usevano.io, memecoins-trading-agent, content-creator-skills." src="light.svg" width="100%">
 </a>
 
 <p align="center">
