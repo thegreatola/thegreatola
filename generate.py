@@ -45,7 +45,7 @@ DOT_GROUPS = 36
 TOOLS = ["Claude", "OpenAI", "Grok", "Hermes", "Higgsfield", "Notion AI", "Cursor", "Bots"]
 STACK = [
     ("Frontend", ["Next.js", "React", "TypeScript"]),
-    ("Backend", ["Python", "Node.js", "Telegram Bot API"]),
+    ("Backend", ["Python", "Node.js", "Telegram Bot API", "Discord API"]),
     ("Database", ["PostgreSQL", "Supabase", "Sanity"]),
     ("Cloud & Security", ["Vercel", "Railway", "Docker", "Privy"]),
     ("Payment", ["Solana"]),
