@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1006" height="576" viewBox="0 0 1006 576" font-family="Consolas, Menlo, 'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="16px" role="img" aria-label="thegreatola: web3 growth operator and AI builder">
+<svg xmlns="http://www.w3.org/2000/svg" width="1006" height="596" viewBox="0 0 1006 596" font-family="Consolas, Menlo, 'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="16px" role="img" aria-label="thegreatola: web3 growth operator and AI builder">
 <style>
 .text{fill:#1a1712}.key{fill:#d8431a}.dim{fill:#cfc9bd}.art{fill:#4a443a}.add{fill:#1a7f37}.del{fill:#cf222e}
 text{white-space:pre}
@@ -8,7 +8,7 @@ text{white-space:pre}
 @keyframes blink{50%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.l{opacity:1;animation:none}.cursor{animation:none}}
 </style>
-<rect width="1006" height="576" rx="14" fill="#fbfaf7"/>
+<rect width="1006" height="596" rx="14" fill="#fbfaf7"/>
 <text class="l art" x="181.2" y="54" textLength="115.2" xml:space="preserve" style="animation-delay:0.03s">+*#%@@@@%%#+</text>
 <text class="l art" x="152.4" y="74" textLength="172.8" xml:space="preserve" style="animation-delay:0.06s">*%@@@@@@%%%%@%@%%*</text>
 <text class="l art" x="123.6" y="94" textLength="230.4" xml:space="preserve" style="animation-delay:0.09s">=%@@@@%%%@@%%%%%#%%%@@%+</text>
@@ -53,10 +53,11 @@ text{white-space:pre}
 <text class="l" x="469.2" y="394" textLength="518.4" xml:space="preserve" style="animation-delay:2.07s"><tspan class="dim">- </tspan><tspan class="text">Contact</tspan><tspan class="dim"> --------------------------------------------</tspan></text>
 <text class="l" x="469.2" y="414" textLength="518.4" xml:space="preserve" style="animation-delay:2.14s"><tspan class="key">Web</tspan><tspan class="dim"> .................................. </tspan><tspan class="text">thegreatola.com</tspan></text>
 <text class="l" x="469.2" y="434" textLength="518.4" xml:space="preserve" style="animation-delay:2.21s"><tspan class="key">X</tspan><tspan class="dim"> ....................................... </tspan><tspan class="text">@thegreatola</tspan></text>
-<text class="l" x="469.2" y="474" textLength="518.4" xml:space="preserve" style="animation-delay:2.35s"><tspan class="dim">- </tspan><tspan class="text">GitHub Stats</tspan><tspan class="dim"> ---------------------------------------</tspan></text>
-<text class="l" x="469.2" y="494" textLength="518.4" xml:space="preserve" style="animation-delay:2.42s"><tspan class="key">Repos</tspan><tspan class="dim"> ................ </tspan><tspan class="text">37</tspan><tspan class="dim"> |  </tspan><tspan class="key">Stars</tspan><tspan class="dim"> ................ </tspan><tspan class="text">25</tspan></text>
-<text class="l" x="469.2" y="514" textLength="518.4" xml:space="preserve" style="animation-delay:2.49s"><tspan class="key">Contributions</tspan><tspan class="dim"> ..... </tspan><tspan class="text">1,327</tspan><tspan class="dim"> |  </tspan><tspan class="key">Followers</tspan><tspan class="dim"> ............. </tspan><tspan class="text">8</tspan></text>
-<text class="l" x="469.2" y="534" textLength="518.4" xml:space="preserve" style="animation-delay:2.56s"><tspan class="key">Lines of Code</tspan><tspan class="dim"> ....... </tspan><tspan class="text">310,066 ( </tspan><tspan class="add">542,514++</tspan><tspan class="text">, </tspan><tspan class="del">232,448--</tspan><tspan class="text"> )</tspan></text>
-<text class="l" x="469.2" y="554" textLength="211.2" xml:space="preserve" style="animation-delay:2.63s"><tspan class="key">thegreatola@github</tspan><tspan class="text">:</tspan><tspan class="key">~</tspan><tspan class="text">$ </tspan></text>
-<g class="l" style="animation-delay:2.63s"><rect class="cursor key" x="680.4" y="540" width="9.6" height="18"/></g>
+<text class="l" x="469.2" y="454" textLength="518.4" xml:space="preserve" style="animation-delay:2.28s"><tspan class="key">LinkedIn</tspan><tspan class="dim"> ................... </tspan><tspan class="text">in/olamilekan-majekodunmi</tspan></text>
+<text class="l" x="469.2" y="494" textLength="518.4" xml:space="preserve" style="animation-delay:2.42s"><tspan class="dim">- </tspan><tspan class="text">GitHub Stats</tspan><tspan class="dim"> ---------------------------------------</tspan></text>
+<text class="l" x="469.2" y="514" textLength="518.4" xml:space="preserve" style="animation-delay:2.49s"><tspan class="key">Repos</tspan><tspan class="dim"> ................ </tspan><tspan class="text">37</tspan><tspan class="dim"> |  </tspan><tspan class="key">Stars</tspan><tspan class="dim"> ................ </tspan><tspan class="text">25</tspan></text>
+<text class="l" x="469.2" y="534" textLength="518.4" xml:space="preserve" style="animation-delay:2.56s"><tspan class="key">Contributions</tspan><tspan class="dim"> .................................. </tspan><tspan class="text">1,327</tspan></text>
+<text class="l" x="469.2" y="554" textLength="518.4" xml:space="preserve" style="animation-delay:2.63s"><tspan class="key">Lines of Code</tspan><tspan class="dim"> ....... </tspan><tspan class="text">310,066 ( </tspan><tspan class="add">542,514++</tspan><tspan class="text">, </tspan><tspan class="del">232,448--</tspan><tspan class="text"> )</tspan></text>
+<text class="l" x="469.2" y="574" textLength="211.2" xml:space="preserve" style="animation-delay:2.70s"><tspan class="key">thegreatola@github</tspan><tspan class="text">:</tspan><tspan class="key">~</tspan><tspan class="text">$ </tspan></text>
+<g class="l" style="animation-delay:2.70s"><rect class="cursor key" x="680.4" y="560" width="9.6" height="18"/></g>
 </svg>
