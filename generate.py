@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Builds dark.svg and light.svg, the terminal card shown on the GitHub profile.
 
-Reads the portrait from ascii.txt, pulls live numbers from the GitHub GraphQL
-API, and writes both themes. Needs a token in GH_TOKEN that can see private
+Reads the portrait point cloud from dots.json (made by portrait.py), pulls live
+numbers from the GitHub GraphQL API, and writes both themes. Needs a token in GH_TOKEN that can see private
 repos, otherwise the stats only count public work. update.sh supplies one from
 the local GitHub CLI login, regenerates, commits and pushes:
 
@@ -12,6 +12,7 @@ import datetime
 import json
 import os
 import pathlib
+import random
 import sys
 import urllib.request
 from xml.sax.saxutils import escape
@@ -26,18 +27,36 @@ CHAR_W = 9.6
 LINE_H = 20
 PAD_X = 18
 TOP = 34
-ART_COLS = 44
-GAP = 3  # blank columns between the portrait and the readout
 INFO_COLS = 54
+PILL_FONT = 13
+PILL_CHAR_W = 7.8
+PILL_H = 22
+PILL_ROW_H = 28
+
+# Left column: the framed portrait with the stat tiles under it.
+MAP_W = 422
+MAP_TOP = 44
+MAP_PAD = 14
+INFO_X = PAD_X + MAP_W + 30
+TILE_H = 62
+DOT_GROUPS = 36
+
+TOOLS = ["Claude", "OpenAI", "Grok", "Higgsfield", "Notion AI", "Cursor"]
+STACK = [
+    ("Frontend", ["Next.js", "React", "TypeScript"]),
+    ("Backend", ["Python", "Node.js", "Telegram Bot API"]),
+    ("Database", ["PostgreSQL", "Supabase", "Sanity"]),
+    ("Cloud & Security", ["Vercel", "Railway", "Docker", "Privy"]),
+]
 
 THEMES = {
     "dark": {
         "bg": "#0d1117", "text": "#c9d1d9", "key": "#ff7a4d", "dim": "#3d4654",
-        "art": "#aab4c0", "add": "#3fb950", "del": "#f85149",
+        "art": "#8b96a3", "panel": "#131a23",
     },
     "light": {
         "bg": "#fbfaf7", "text": "#1a1712", "key": "#d8431a", "dim": "#cfc9bd",
-        "art": "#4a443a", "add": "#1a7f37", "del": "#cf222e",
+        "art": "#7a7264", "panel": "#f4f1ea",
     },
 }
 
@@ -68,9 +87,6 @@ def fetch_stats():
                 pageInfo { hasNextPage endCursor }
                 nodes {
                   name owner { login } stargazerCount
-                  languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
-                    edges { size node { name } }
-                  }
                 }
               }
             } }""", cursor=cursor)["viewer"]["repositories"]
@@ -78,16 +94,6 @@ def fetch_stats():
         if not page["pageInfo"]["hasNextPage"]:
             break
         cursor = page["pageInfo"]["endCursor"]
-
-    languages = {}
-    for repo in repos:
-        for edge in repo["languages"]["edges"]:
-            name = edge["node"]["name"]
-            languages[name] = languages.get(name, 0) + edge["size"]
-    # Markup and stylesheets drown out the languages the logic is written in.
-    for markup in ("HTML", "CSS", "SCSS", "Jupyter Notebook"):
-        languages.pop(markup, None)
-    top_languages = [name for name, _ in sorted(languages.items(), key=lambda kv: -kv[1])[:3]]
 
     contributions = 0
     this_year = datetime.date.today().year
@@ -130,11 +136,11 @@ def fetch_stats():
         "contributions": contributions,
         "added": added,
         "deleted": deleted,
-        "languages": top_languages,
     }
 
 
-# A readout line is a list of (text, css class) segments, INFO_COLS wide.
+# The readout is a list of blocks drawn top to bottom. A text block is a list
+# of (text, css class) segments INFO_COLS wide; the others are tagged tuples.
 
 def row(key, value):
     dots = "." * (INFO_COLS - len(key) - len(value) - 2)
@@ -156,111 +162,196 @@ def heading(title):
     return [("- ", "dim"), (title, "text"), (" " + "-" * (INFO_COLS - len(title) - 3), "dim")]
 
 
-def readout(stats):
-    loc = stats["added"] - stats["deleted"]
-    loc_key = "Lines of Code"
-    loc_tail = f"{loc:,} ( "
-    plus, minus = f"{stats['added']:,}++", f"{stats['deleted']:,}--"
-    loc_dots = "." * (INFO_COLS - len(loc_key) - len(loc_tail) - len(plus) - len(minus) - 6)
+GAP = ("gap",)
+
+
+def readout():
     return [
         [(f"{LOGIN}@github", "text"), (" " + "-" * (INFO_COLS - len(LOGIN) - 8), "dim")],
-        row("OS", "Web3 growth operator + AI builder"),
+        row("Role", "AI agents + workflow automation"),
+        row("Status", "Building usevano.io"),
         row("Uptime", "5+ years scaling protocols"),
         row("Host", "Working globally"),
-        row("Editor", "Claude Code, Cursor"),
-        row("Languages", ", ".join(stats["languages"])),
-        [],
+        GAP,
+        heading("Tools"),
+        ("pills", None, TOOLS),
+        GAP,
+        heading("Stack"),
+        *[("pills", label, items) for label, items in STACK],
+        GAP,
         heading("Builds"),
         row("gtmquant.com", "GTM engine for web3 campaigns"),
         row("usevano.io", "Market intelligence"),
         row("memecoins-trading-agent", "Autonomous trading agent"),
         row("content-creator-skills", "Content engine for LLMs"),
-        [],
+        GAP,
         heading("Track Record"),
         row("Impressions", "250M+ generated for clients"),
         pair("Projects", "200+", "Creators", "2K+"),
         row("Audience", "104K+ on X"),
-        [],
+        GAP,
         heading("Contact"),
         row("Web", "thegreatola.com"),
         row("X", "@thegreatola"),
         row("LinkedIn", "in/olamilekan-majekodunmi"),
-        [],
-        heading("GitHub Stats"),
-        pair("Repos", f"{stats['repos']:,}", "Stars", f"{stats['stars']:,}"),
-        row("Contributions", f"{stats['contributions']:,}"),
-        [(loc_key, "key"), (f" {loc_dots} ", "dim"), (loc_tail, "text"),
-         (plus, "add"), (", ", "text"), (minus, "del"), (" )", "text")],
+        GAP,
         [(f"{LOGIN}@github", "key"), (":", "text"), ("~", "key"), ("$ ", "text")],
     ]
 
 
-def render(theme, art, lines):
+def compact(n):
+    for size, suffix in ((1_000_000, "M"), (1_000, "K")):
+        if n >= size * 10:
+            return f"{n / size:.0f}{suffix}"
+        if n >= size:
+            return f"{n / size:.1f}{suffix}"
+    return str(n)
+
+
+def render_readout(blocks, start):
+    """Returns the svg lines, the y of the bottom, and where the cursor goes."""
+    out, y, cursor = [], TOP, None
+    for i, block in enumerate(blocks):
+        delay = start + i * 0.06
+        anim = f'style="animation-delay:{delay:.2f}s"'
+        if block is GAP:
+            y += LINE_H
+        elif block[0] == "pills":
+            _, label, items = block
+            x = INFO_X
+            out.append(f'<g class="l" {anim}>')
+            if label:
+                out.append(
+                    f'<text class="key" x="{x:.1f}" y="{y + 2}" textLength="{len(label) * CHAR_W:.1f}" '
+                    f'xml:space="preserve">{escape(label)}</text>'
+                )
+                x += 17 * CHAR_W
+            for item in items:
+                width = len(item) * PILL_CHAR_W + 18
+                out.append(
+                    f'<rect class="pill" x="{x:.1f}" y="{y - 14}" width="{width:.1f}" '
+                    f'height="{PILL_H}" rx="{PILL_H / 2}"/>'
+                    f'<text class="text" font-size="{PILL_FONT}px" x="{x + 9:.1f}" y="{y + 1}" '
+                    f'textLength="{len(item) * PILL_CHAR_W:.1f}" xml:space="preserve">{escape(item)}</text>'
+                )
+                x += width + 7
+            out.append("</g>")
+            y += PILL_ROW_H
+        else:
+            chars = sum(len(text) for text, _ in block)
+            spans = "".join(f'<tspan class="{cls}">{escape(text)}</tspan>' for text, cls in block)
+            out.append(
+                f'<text class="l" x="{INFO_X:.1f}" y="{y}" textLength="{chars * CHAR_W:.1f}" '
+                f'xml:space="preserve" {anim}>{spans}</text>'
+            )
+            cursor = (INFO_X + chars * CHAR_W, y, delay)
+            y += LINE_H
+    x, cy, delay = cursor
+    out.append(
+        f'<g class="l" style="animation-delay:{delay:.2f}s"><rect class="cursor key" '
+        f'x="{x:.1f}" y="{cy - 14}" width="{CHAR_W}" height="18"/></g>'
+    )
+    return out, y - LINE_H + 8
+
+
+def render_map(portrait, bottom):
+    """The framed dot portrait. Dots are split into groups that drift in from
+    scattered offsets, so the face assembles out of loose particles."""
+    x0, y0 = PAD_X, MAP_TOP
+    height = bottom - y0
+    scale = min((MAP_W - 2 * MAP_PAD) / portrait["width"], (height - 2 * MAP_PAD) / portrait["height"])
+    off_x = x0 + (MAP_W - portrait["width"] * scale) / 2
+    off_y = y0 + height - MAP_PAD - portrait["height"] * scale
+    out = [
+        f'<text class="label" x="{x0}" y="{y0 - 12}" font-size="11px" letter-spacing="2.5">VISUAL.MAP</text>',
+        f'<rect class="frame" x="{x0}" y="{y0}" width="{MAP_W}" height="{height}" rx="6"/>',
+    ]
+    for cx, cy, sx, sy in ((x0, y0, 1, 1), (x0 + MAP_W, y0, -1, 1),
+                           (x0, y0 + height, 1, -1), (x0 + MAP_W, y0 + height, -1, -1)):
+        out.append(f'<path class="corner" d="M{cx + 16 * sx} {cy}H{cx}V{cy + 16 * sy}"/>')
+
+    rng = random.Random(11)
+    groups = [[] for _ in range(DOT_GROUPS)]
+    for dot in portrait["dots"]:
+        rng.choice(groups).append(dot)
+    for i, dots in enumerate(groups):
+        cls = "p accent" if i % 9 == 0 else "p"
+        style = (f"--dx:{rng.uniform(-70, 70):.0f}px;--dy:{rng.uniform(-90, 90):.0f}px;"
+                 f"--fx:{rng.uniform(-1.6, 1.6):.1f}px;--fy:{rng.uniform(-1.6, 1.6):.1f}px;"
+                 f"animation-delay:{rng.uniform(0, 0.9):.2f}s,{2.4 + rng.uniform(0, 2):.2f}s")
+        path = "".join(f"M{off_x + x * scale:.1f} {off_y + y * scale:.1f}h0" for x, y in dots)
+        out.append(f'<path class="{cls}" style="{style}" d="{path}"/>')
+    return out
+
+
+def render_tiles(stats, top):
+    tiles = [
+        (f"{stats['repos']:,}", "repos"),
+        (f"{stats['stars']:,}", "stars"),
+        (f"{stats['contributions']:,}", "contributions"),
+        (compact(stats["added"] - stats["deleted"]), "lines of code"),
+    ]
+    gap = 10
+    width = (MAP_W - gap * (len(tiles) - 1)) / len(tiles)
+    out = []
+    for i, (value, label) in enumerate(tiles):
+        x = PAD_X + i * (width + gap)
+        out.append(
+            f'<g class="l" style="animation-delay:{1.2 + i * 0.12:.2f}s">'
+            f'<rect class="tile" x="{x:.1f}" y="{top}" width="{width:.1f}" height="{TILE_H}" rx="8"/>'
+            f'<text class="text" font-size="19px" font-weight="bold" text-anchor="middle" '
+            f'x="{x + width / 2:.1f}" y="{top + 28}">{value}</text>'
+            f'<text class="label" font-size="10.5px" text-anchor="middle" '
+            f'x="{x + width / 2:.1f}" y="{top + 46}">{label}</text></g>'
+        )
+    return out
+
+
+def render(theme, portrait, stats):
     c = THEMES[theme]
-    info_x = PAD_X + (ART_COLS + GAP) * CHAR_W
-    width = round(info_x + INFO_COLS * CHAR_W + PAD_X)
-    rows = max(len(art), len(lines))
-    height = TOP + rows * LINE_H + 2
+    info, info_bottom = render_readout(readout(), 0.3)
+    tiles_top = info_bottom - TILE_H
+    width = round(INFO_X + INFO_COLS * CHAR_W + PAD_X)
+    height = info_bottom + 16
 
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
         f'viewBox="0 0 {width} {height}" font-family="Consolas, Menlo, \'DejaVu Sans Mono\', '
         f'\'Liberation Mono\', monospace" font-size="{FONT_SIZE}px" role="img" '
-        f'aria-label="{LOGIN}: web3 growth operator and AI builder">',
+        f'aria-label="{LOGIN}: AI agents, workflow automation and products">',
         "<style>",
         f".text{{fill:{c['text']}}}.key{{fill:{c['key']}}}.dim{{fill:{c['dim']}}}"
-        f".art{{fill:{c['art']}}}.add{{fill:{c['add']}}}.del{{fill:{c['del']}}}",
+        f".label{{fill:{c['art']}}}",
+        f".frame{{fill:{c['panel']};stroke:{c['dim']}}}"
+        f".corner{{fill:none;stroke:{c['key']};stroke-width:2}}",
+        f".pill,.tile{{fill:{c['panel']};stroke:{c['dim']}}}",
+        f".p{{fill:none;stroke:{c['text']};stroke-width:1.8;stroke-linecap:round;"
+        "animation:gather 1.5s cubic-bezier(.2,.7,.2,1) both,drift 5s ease-in-out infinite alternate}",
+        f".accent{{stroke:{c['key']}}}",
         "text{white-space:pre}",
         ".l{opacity:0;animation:in .3s ease-out forwards}",
         ".cursor{animation:blink 1.1s steps(1) infinite}",
         "@keyframes in{to{opacity:1}}",
         "@keyframes blink{50%{opacity:0}}",
-        "@media (prefers-reduced-motion:reduce){.l{opacity:1;animation:none}.cursor{animation:none}}",
+        "@keyframes gather{from{opacity:0;transform:translate(var(--dx),var(--dy))}}",
+        "@keyframes drift{to{transform:translate(var(--fx),var(--fy))}}",
+        "@media (prefers-reduced-motion:reduce){.l{opacity:1;animation:none}"
+        ".cursor,.p{animation:none}}",
         "</style>",
         f'<rect width="{width}" height="{height}" rx="14" fill="{c["bg"]}"/>',
     ]
-
-    # Portrait draws in first, top to bottom, then the readout types out.
-    for i, line in enumerate(art):
-        if not line.strip():
-            continue
-        indent = len(line) - len(line.lstrip())
-        body = line.strip()
-        out.append(
-            f'<text class="l art" x="{PAD_X + indent * CHAR_W:.1f}" y="{TOP + i * LINE_H}" '
-            f'textLength="{len(body) * CHAR_W:.1f}" xml:space="preserve" '
-            f'style="animation-delay:{i * 0.03:.2f}s">{escape(body)}</text>'
-        )
-
-    start = len(art) * 0.03
-    cursor = None
-    for i, segments in enumerate(lines):
-        if not segments:
-            continue
-        chars = sum(len(text) for text, _ in segments)
-        y = TOP + i * LINE_H
-        delay = start + i * 0.07
-        spans = "".join(f'<tspan class="{cls}">{escape(text)}</tspan>' for text, cls in segments)
-        out.append(
-            f'<text class="l" x="{info_x:.1f}" y="{y}" textLength="{chars * CHAR_W:.1f}" '
-            f'xml:space="preserve" style="animation-delay:{delay:.2f}s">{spans}</text>'
-        )
-        cursor = (info_x + chars * CHAR_W, y, delay)
-
-    x, y, delay = cursor
-    out.append(
-        f'<g class="l" style="animation-delay:{delay:.2f}s"><rect class="cursor key" '
-        f'x="{x:.1f}" y="{y - 14}" width="{CHAR_W}" height="18"/></g>'
-    )
+    out += render_map(portrait, tiles_top - 12)
+    out += render_tiles(stats, tiles_top)
+    out += info
     out.append("</svg>")
     return "\n".join(out) + "\n"
 
 
 def main():
-    art = (ROOT / "ascii.txt").read_text().splitlines()
-    lines = readout(fetch_stats())
+    portrait = json.loads((ROOT / "dots.json").read_text())
+    stats = fetch_stats()
     for theme in THEMES:
-        (ROOT / f"{theme}.svg").write_text(render(theme, art, lines))
+        (ROOT / f"{theme}.svg").write_text(render(theme, portrait, stats))
 
 
 if __name__ == "__main__":
