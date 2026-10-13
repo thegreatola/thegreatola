@@ -5,7 +5,7 @@
 set -e
 cd "$(dirname "$0")"
 GH_TOKEN=$(gh auth token) python3 generate.py
-git add dark.svg light.svg
+git add dark.svg light.svg snake.svg
 if git diff --cached --quiet; then
   echo "Card already up to date."
   exit 0

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Builds dark.svg and light.svg, the terminal card shown on the GitHub profile.
+"""Builds dark.svg and light.svg, the terminal card shown on the GitHub profile,
+and snake.svg, the contribution map with a snake crawling over it.
 
 Reads the portrait point cloud from dots.json (made by portrait.py), pulls live
 numbers from the GitHub GraphQL API, and writes both themes. Needs a token in GH_TOKEN that can see private
@@ -138,6 +139,104 @@ def fetch_stats():
         "added": added,
         "deleted": deleted,
     }
+
+
+def fetch_calendar():
+    """The last year of contributions as (total, weeks); each week is a list of
+    (weekday, count, level 0-4, date)."""
+    calendar = gql("""{ viewer { contributionsCollection { contributionCalendar {
+        totalContributions
+        weeks { contributionDays { weekday contributionCount contributionLevel date } }
+    } } } }""")["viewer"]["contributionsCollection"]["contributionCalendar"]
+    levels = ["NONE", "FIRST_QUARTILE", "SECOND_QUARTILE", "THIRD_QUARTILE", "FOURTH_QUARTILE"]
+    weeks = [
+        [(d["weekday"], d["contributionCount"], levels.index(d["contributionLevel"]), d["date"])
+         for d in week["contributionDays"]]
+        for week in calendar["weeks"]
+    ]
+    return calendar["totalContributions"], weeks
+
+
+SNAKE_LEVELS = ["#ebe6dc", "#f6cdbd", "#f0a184", "#e76f47", "#d8431a"]
+SNAKE_LOOP = 32  # seconds for one lap of the board
+SNAKE_SEGMENTS = 6
+REGROW = 0.34  # share of the lap a cell stays eaten before it grows back
+
+
+def render_snake(total, weeks):
+    """Contribution grid in the light card style. The snake sweeps the columns
+    in a zigzag, each cell empties as the head reaches it and grows back later,
+    and a lane under the grid brings the snake home so the lap repeats forever."""
+    c = THEMES["light"]
+    width = round(INFO_X + INFO_COLS * CHAR_W + PAD_X)
+    pitch = (width - 2 * PAD_X) / len(weeks)
+    cell = pitch - 4
+    top = 58
+    height = round(top + 8 * pitch + 14)
+
+    def center(col, row):
+        return PAD_X + col * pitch + pitch / 2, top + row * pitch + pitch / 2
+
+    # Zigzag over every slot of the grid, then back along the lane below it.
+    route = []
+    for col in range(len(weeks)):
+        rows = range(7) if col % 2 == 0 else range(6, -1, -1)
+        route += [(col, row) for row in rows]
+    points = [center(col, row) for col, row in route]
+    points += [center(route[-1][0], 7), center(0, 7), points[0]]
+    lengths = [0.0]
+    for (x1, y1), (x2, y2) in zip(points, points[1:]):
+        lengths.append(lengths[-1] + abs(x2 - x1) + abs(y2 - y1))
+    reach = {slot: lengths[i] / lengths[-1] * SNAKE_LOOP for i, slot in enumerate(route)}
+    path = "M" + "L".join(f"{x:.1f} {y:.1f}" for x, y in points)
+
+    out = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+        f'viewBox="0 0 {width} {height}" font-family="Consolas, Menlo, \'DejaVu Sans Mono\', '
+        f'\'Liberation Mono\', monospace" role="img" '
+        f'aria-label="{total:,} contributions in the last year">',
+        "<style>",
+        f".label{{fill:{c['art']}}}.text{{fill:{c['text']}}}.key{{fill:{c['key']}}}",
+        "".join(f".v{i}{{--c:{color}}}" for i, color in enumerate(SNAKE_LEVELS)),
+        f".d{{fill:var(--c)}}.e{{animation:eat {SNAKE_LOOP}s linear infinite}}",
+        f"@keyframes eat{{0%,{REGROW * 100:.0f}%{{fill:{SNAKE_LEVELS[0]}}}"
+        f"{REGROW * 100 + 8:.0f}%,100%{{fill:var(--c)}}}}",
+        "@media (prefers-reduced-motion:reduce){.e{animation:none}}",
+        "</style>",
+        f'<rect width="{width}" height="{height}" rx="14" fill="{c["bg"]}"/>',
+        f'<text class="label" x="{PAD_X}" y="24" font-size="11px" letter-spacing="2.5">CONTRIBUTION.MAP</text>',
+        f'<text font-size="13px" text-anchor="end" x="{width - PAD_X}" y="24">'
+        f'<tspan class="key" font-weight="bold">{total:,}</tspan>'
+        f'<tspan class="label"> contributions in the last year</tspan></text>',
+    ]
+
+    month = None
+    for col, week in enumerate(weeks):
+        first = week[0][3]
+        if first[5:7] != month and col < len(weeks) - 1:
+            month = first[5:7]
+            name = datetime.date.fromisoformat(first).strftime("%b")
+            out.append(f'<text class="label" font-size="10.5px" x="{PAD_X + col * pitch + 2:.1f}" y="{top - 8}">{name}</text>')
+        for weekday, count, level, _ in week:
+            x, y = center(col, weekday)
+            eaten = f' class="d v{level} e" style="animation-delay:{reach[(col, weekday)]:.2f}s"' if level else ' class="d v0"'
+            out.append(f'<rect{eaten} x="{x - cell / 2:.1f}" y="{y - cell / 2:.1f}" '
+                       f'width="{cell:.1f}" height="{cell:.1f}" rx="3"/>')
+
+    out.append(f'<path id="route" d="{path}" fill="none"/>')
+    lag = pitch / lengths[-1] * SNAKE_LOOP * 0.92
+    for i in reversed(range(SNAKE_SEGMENTS)):
+        size = cell * (1.12 - 0.09 * i)
+        fill = c["text"] if i else c["key"]
+        out.append(
+            f'<rect x="{-size / 2:.1f}" y="{-size / 2:.1f}" width="{size:.1f}" height="{size:.1f}" '
+            f'rx="{size * 0.3:.1f}" fill="{fill}" visibility="hidden">'
+            f'<set attributeName="visibility" to="visible" begin="{i * lag:.2f}s"/>'
+            f'<animateMotion dur="{SNAKE_LOOP}s" begin="{i * lag:.2f}s" repeatCount="indefinite">'
+            f'<mpath href="#route"/></animateMotion></rect>'
+        )
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
 
 
 # The readout is a list of blocks drawn top to bottom. A text block is a list
@@ -361,6 +460,7 @@ def main():
     stats = fetch_stats()
     for theme in THEMES:
         (ROOT / f"{theme}.svg").write_text(render(theme, portrait, stats))
+    (ROOT / "snake.svg").write_text(render_snake(*fetch_calendar()))
 
 
 if __name__ == "__main__":
