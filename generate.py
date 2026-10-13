@@ -256,33 +256,8 @@ def render(theme, art, lines):
     return "\n".join(out) + "\n"
 
 
-def render_avatar(art):
-    """Square crop of the portrait on the light card, for the profile picture."""
-    c = THEMES["light"]
-    size = len(art) * LINE_H
-    left = (size - ART_COLS * CHAR_W) / 2
-    out = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" '
-        f'viewBox="0 0 {size} {size}" font-family="Consolas, Menlo, \'DejaVu Sans Mono\', '
-        f'\'Liberation Mono\', monospace" font-size="{FONT_SIZE}px" font-weight="bold">',
-        f'<rect width="{size}" height="{size}" fill="{c["bg"]}"/>',
-    ]
-    for i, line in enumerate(art):
-        if not line.strip():
-            continue
-        indent = len(line) - len(line.lstrip())
-        body = line.strip()
-        out.append(
-            f'<text fill="{c["text"]}" x="{left + indent * CHAR_W:.1f}" y="{16 + i * LINE_H}" '
-            f'textLength="{len(body) * CHAR_W:.1f}" xml:space="preserve">{escape(body)}</text>'
-        )
-    out.append("</svg>")
-    return "\n".join(out) + "\n"
-
-
 def main():
     art = (ROOT / "ascii.txt").read_text().splitlines()
-    (ROOT / "avatar.svg").write_text(render_avatar(art))
     lines = readout(fetch_stats())
     for theme in THEMES:
         (ROOT / f"{theme}.svg").write_text(render(theme, art, lines))
