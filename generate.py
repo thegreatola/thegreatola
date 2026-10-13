@@ -168,7 +168,7 @@ GAP = ("gap",)
 def readout():
     return [
         [(f"{LOGIN}@github", "text"), (" " + "-" * (INFO_COLS - len(LOGIN) - 8), "dim")],
-        row("Role", "AI Systems + GTM Engineer"),
+        row("Role", "AI Engineer + GTM Engineer"),
         row("Status", "Building usevano.io"),
         row("Uptime", "5+ years scaling protocols"),
         row("Host", "Working globally"),
