@@ -265,17 +265,22 @@ def heading(title):
 GAP = ("gap",)
 
 
-def pill_rows(items):
-    """Splits unlabelled pills into as many rows as the readout width needs."""
+LABEL_COLS = 17  # width reserved for a stack group's label
+
+
+def pill_rows(label, items):
+    """Splits pills into as many rows as the readout width needs. Rows after
+    the first carry an empty label so they stay indented under the pills."""
+    room = (INFO_COLS - (LABEL_COLS if label else 0)) * CHAR_W
     rows, used = [[]], 0
     for item in items:
         width = len(item) * PILL_CHAR_W + 18 + 7
-        if rows[-1] and used + width - 7 > INFO_COLS * CHAR_W:
+        if rows[-1] and used + width - 7 > room:
             rows.append([])
             used = 0
         rows[-1].append(item)
         used += width
-    return [("pills", None, row) for row in rows]
+    return [("pills", label if i == 0 else label and "", row) for i, row in enumerate(rows)]
 
 
 def readout():
@@ -287,10 +292,10 @@ def readout():
         row("Host", "Working globally"),
         GAP,
         heading("Tools"),
-        *pill_rows(TOOLS),
+        *pill_rows(None, TOOLS),
         GAP,
         heading("Stack"),
-        *[("pills", label, items) for label, items in STACK],
+        *[block for label, items in STACK for block in pill_rows(label, items)],
         GAP,
         heading("Builds"),
         row("gtmquant.com", "GTM engine for web3 campaigns"),
@@ -341,7 +346,8 @@ def render_readout(blocks, start):
                     f'<text class="key" x="{x:.1f}" y="{y + 2}" textLength="{len(label) * CHAR_W:.1f}" '
                     f'xml:space="preserve">{escape(label)}</text>'
                 )
-                x += 17 * CHAR_W
+            if label is not None:
+                x += LABEL_COLS * CHAR_W
             for item in items:
                 width = len(item) * PILL_CHAR_W + 18
                 out.append(
