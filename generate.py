@@ -299,7 +299,7 @@ def readout():
         GAP,
         heading("Builds"),
         row("gtmquant.com", "GTM engine for any business"),
-        row("usevano.io", "Market intelligence"),
+        row("usevano.io", "Personal trading assistant"),
         row("memecoins-trading-agent", "Autonomous trading agent"),
         row("content-creator-skills", "Content engine for LLMs"),
         GAP,
