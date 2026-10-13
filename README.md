@@ -2,6 +2,8 @@
   <img alt="thegreatola: AI agents, workflow automation and products. Builds: gtmquant.com, usevano.io, memecoins-trading-agent, content-creator-skills." src="light.svg" width="100%">
 </a>
 
+<img alt="Contribution map for the last year, with a snake crawling over it" src="snake.svg" width="100%">
+
 <p align="center">
   <a href="https://www.thegreatola.com">thegreatola.com</a> ·
   <a href="https://x.com/thegreatola">X</a> ·
