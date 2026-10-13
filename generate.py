@@ -56,7 +56,7 @@ def gql(query, **variables):
 
 
 def fetch_stats():
-    viewer = gql("""{ viewer { id login createdAt followers { totalCount } } }""")["viewer"]
+    viewer = gql("""{ viewer { id login createdAt } }""")["viewer"]
     if viewer["login"] != LOGIN:
         sys.exit(f"token belongs to {viewer['login']}, expected {LOGIN}")
 
@@ -127,7 +127,6 @@ def fetch_stats():
     return {
         "repos": len(repos),
         "stars": sum(repo["stargazerCount"] for repo in repos),
-        "followers": viewer["followers"]["totalCount"],
         "contributions": contributions,
         "added": added,
         "deleted": deleted,
@@ -185,10 +184,11 @@ def readout(stats):
         heading("Contact"),
         row("Web", "thegreatola.com"),
         row("X", "@thegreatola"),
+        row("LinkedIn", "in/olamilekan-majekodunmi"),
         [],
         heading("GitHub Stats"),
         pair("Repos", f"{stats['repos']:,}", "Stars", f"{stats['stars']:,}"),
-        pair("Contributions", f"{stats['contributions']:,}", "Followers", f"{stats['followers']:,}"),
+        row("Contributions", f"{stats['contributions']:,}"),
         [(loc_key, "key"), (f" {loc_dots} ", "dim"), (loc_tail, "text"),
          (plus, "add"), (", ", "text"), (minus, "del"), (" )", "text")],
         [(f"{LOGIN}@github", "key"), (":", "text"), ("~", "key"), ("$ ", "text")],
