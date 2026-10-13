@@ -259,7 +259,7 @@ def render_readout(blocks, start):
 
 def render_map(portrait, bottom):
     """The framed dot portrait. Dots are split into groups that drift in from
-    scattered offsets, so the face assembles out of loose particles."""
+    scattered offsets, so the face assembles out of loose particles, on a loop."""
     x0, y0 = PAD_X, MAP_TOP
     height = bottom - y0
     scale = min((MAP_W - 2 * MAP_PAD) / portrait["width"], (height - 2 * MAP_PAD) / portrait["height"])
@@ -281,7 +281,7 @@ def render_map(portrait, bottom):
         cls = "p accent" if i % 9 == 0 else "p"
         style = (f"--dx:{rng.uniform(-70, 70):.0f}px;--dy:{rng.uniform(-90, 90):.0f}px;"
                  f"--fx:{rng.uniform(-1.6, 1.6):.1f}px;--fy:{rng.uniform(-1.6, 1.6):.1f}px;"
-                 f"animation-delay:{rng.uniform(0, 0.9):.2f}s,{2.4 + rng.uniform(0, 2):.2f}s")
+                 f"animation-delay:{rng.uniform(0, 0.9):.2f}s")
         path = "".join(f"M{off_x + x * scale:.1f} {off_y + y * scale:.1f}h0" for x, y in dots)
         out.append(f'<path class="{cls}" style="{style}" d="{path}"/>')
     return out
@@ -329,15 +329,20 @@ def render(theme, portrait, stats):
         f".corner{{fill:none;stroke:{c['key']};stroke-width:2}}",
         f".pill,.tile{{fill:{c['panel']};stroke:{c['dim']}}}",
         f".p{{fill:none;stroke:{c['text']};stroke-width:1.8;stroke-linecap:round;"
-        "animation:gather 1.5s cubic-bezier(.2,.7,.2,1) both,drift 5s ease-in-out infinite alternate}",
+        "animation:cycle 11s ease-in-out infinite both}",
         f".accent{{stroke:{c['key']}}}",
         "text{white-space:pre}",
         ".l{opacity:0;animation:in .3s ease-out forwards}",
         ".cursor{animation:blink 1.1s steps(1) infinite}",
         "@keyframes in{to{opacity:1}}",
         "@keyframes blink{50%{opacity:0}}",
-        "@keyframes gather{from{opacity:0;transform:translate(var(--dx),var(--dy))}}",
-        "@keyframes drift{to{transform:translate(var(--fx),var(--fy))}}",
+        # One endless loop: particles gather into the face, hold with a slight
+        # drift, break apart the opposite way, then gather again.
+        "@keyframes cycle{0%{opacity:0;transform:translate(var(--dx),var(--dy))}"
+        "14%{opacity:1;transform:translate(0,0)}"
+        "45%{opacity:1;transform:translate(var(--fx),var(--fy))}"
+        "76%{opacity:1;transform:translate(0,0)}"
+        "100%{opacity:0;transform:translate(calc(var(--dx)*-1),calc(var(--dy)*-1))}}",
         "@media (prefers-reduced-motion:reduce){.l{opacity:1;animation:none}"
         ".cursor,.p{animation:none}}",
         "</style>",
