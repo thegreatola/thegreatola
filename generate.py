@@ -48,7 +48,7 @@ STACK = [
     ("Backend", ["Python", "Node.js", "Telegram Bot API", "Discord API"]),
     ("Database", ["PostgreSQL", "Supabase", "Sanity"]),
     ("Cloud & Security", ["Vercel", "Railway", "Docker", "Privy"]),
-    ("Payment", ["Solana"]),
+    ("Payment", ["Solana", "Stripe"]),
 ]
 
 THEMES = {
