@@ -314,7 +314,7 @@ def readout():
         heading("Contact"),
         row("Web", "thegreatola.com"),
         row("X", "@thegreatola"),
-        row("LinkedIn", "in/olamilekan-majekodunmi"),
+        row("LinkedIn", "in/thegreatola"),
         GAP,
         [(f"{LOGIN}@github", "key"), (":", "text"), ("~", "key"), ("$ ", "text")],
     ]
