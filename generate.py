@@ -15,6 +15,7 @@ import os
 import pathlib
 import random
 import sys
+import time
 import urllib.request
 from xml.sax.saxutils import escape
 
@@ -69,8 +70,17 @@ def gql(query, **variables):
         data=json.dumps({"query": query, "variables": variables}).encode(),
         headers={"Authorization": f"bearer {os.environ['GH_TOKEN']}"},
     )
-    with urllib.request.urlopen(req, timeout=60) as res:
-        body = json.load(res)
+    # The API sometimes stalls for a minute; one slow call should not cost
+    # the whole weekly refresh, so retry a few times before giving up.
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(req, timeout=90) as res:
+                body = json.load(res)
+            break
+        except (TimeoutError, OSError):
+            if attempt == 3:
+                raise
+            time.sleep(15 * (attempt + 1))
     if body.get("errors"):
         sys.exit(f"GitHub API error: {body['errors']}")
     return body["data"]
