@@ -310,6 +310,7 @@ def readout():
         heading("Builds"),
         row("gtmquant.com", "GTM engine for any business"),
         row("usevano.io", "Personal trading assistant"),
+        row("KeepFit", "Personal trainer app"),
         row("memecoins-trading-agent", "Autonomous trading agent"),
         row("content-creator-skills", "Content engine for LLMs"),
         GAP,
